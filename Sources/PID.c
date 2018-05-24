@@ -89,7 +89,7 @@ char PID_Compute(PID* PID)
  * it's called automatically from the constructor, but tunings can also
  * be adjusted on the fly during normal operation
  ******************************************************************************/
-void SetTunings(PID* PID, REAL Kp, REAL Ki, REAL Kd, int POn)
+void PID_SetTunings(PID* PID, REAL Kp, REAL Ki, REAL Kd, int POn)
 {
    if (Kp<0 || Ki<0 || Kd<0) return;
 
@@ -162,7 +162,7 @@ void PID_SetOutputLimits(PID* PID, REAL Min, REAL Max)
  * when the transition from manual to auto occurs, the controller is
  * automatically initialized
  ******************************************************************************/
-void SetMode(PID* PID, int Mode)
+void PID_SetMode(PID* PID, int Mode)
 {
     char newAuto = (Mode == AUTOMATIC);
     if(newAuto && !PID->inAuto)

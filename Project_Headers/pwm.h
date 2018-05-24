@@ -16,3 +16,4 @@
 void delay(int);
 void PWM_LED_Init();
 void PWM_LED_Duty_Cycle(float);
+void PWM_Motors_Init();

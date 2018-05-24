@@ -1,6 +1,6 @@
 <Analysispoints>
 	<Name>AnalysispointsManager</Name>
-	<ProjectPath>D:/nextcloud/MiP/workspace/Accel_PWM_LED_printf_PID/SaAnalysispointsManager.apconfig</ProjectPath>
+	<ProjectPath>D:/Git/2Ddrone/SaAnalysispointsManager.apconfig</ProjectPath>
 	<MaxNumberOfCores>1</MaxNumberOfCores>
 	<Comments>Analysispoints Manager</Comments>
 	<IgnoreAll>false</IgnoreAll>

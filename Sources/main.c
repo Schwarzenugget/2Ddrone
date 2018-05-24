@@ -40,6 +40,7 @@ int main (void)
   	* PWM
   	**************/
   	PWM_LED_Init();
+  	PWM_Motors_Init();
   	
   	/**************
   	* UART Comm
@@ -211,7 +212,7 @@ void FTPM0_Init(){
 	/*Disable TPM while configuring it*/
 	TPM0_SC = 0x0;
 	/*TPM Modulo Register*/
-	TPM0_MOD = 0xF000;
+	TPM0_MOD = 0xD000;
 	/*Clear Timer Overflow Flag*/
 	TPM0_SC |= 0x1 << 7;
 	/*Divide Clock by 2^6*/

@@ -65,6 +65,62 @@ void PWM_LED_Init()
 
 }
 
+void PWM_Motors_Init(){
+	/*
+	* PWMA - PTB0
+	* PWMB - PTB1
+	* AIN1 - PTB2
+	* AIN2 - PTB3
+	* STBY - PTE20
+	* BIN1 - PTE21
+	* BIN2 - PTE22
+	*/
+	
+	/*Init Pins*/
+	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
+	SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK;
+	SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
+	PORTB_PCR0 |= PORT_PCR_MUX(3); //PWM TPM1 CH0
+	PORTB_PCR1 |= PORT_PCR_MUX(3); //PWM TPM1 CH1
+	PORTB_PCR2 |= PORT_PCR_MUX(1); //GPIO
+	PORTB_PCR3 |= PORT_PCR_MUX(1); //GPIO
+	PORTE_PCR20 |= PORT_PCR_MUX(1);//GPIO
+	PORTE_PCR21 |= PORT_PCR_MUX(1);//GPIO
+	PORTE_PCR22 |= PORT_PCR_MUX(1);//GPIO
+	
+	/*Init PWM signals*/
+	/*Enable clock con TPM0*/
+	SIM_SCGC6 |= SIM_SCGC6_TPM1_MASK;
+	/*Select clock source*/
+	SIM_SOPT2 |= 0x01 << SIM_SOPT2_TPMSRC_SHIFT; //MCGFLLCLK clock
+	/*Disable TPM while configuring it*/
+	TPM1_SC = TPM_SC_CMOD(0);
+	/*TPM Modulo Register */
+	TPM1_MOD = 8000; //1sec
+	/*Divide Clock by 2^n*/
+	TPM1_SC |= TPM_SC_PS(0);
+	/*OC toogle mode*/
+	TPM1_C0SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
+	TPM1_C1SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
+	/*schedule next transition*/
+	TPM1_C0V = 4000; //Duty Cycle A
+	TPM1_C1V = 4000; //Duty Cycle B
+	/*Enable timer mode*/
+	TPM1_SC |= TPM_SC_CMOD(1);
+	
+	/*Set GPIO signals as Outputs*/
+	GPIOB_PDDR |= (1<<2 | 1<<3);
+	GPIOE_PDDR |= (1<<20 | 1<<21 | 1<<22);
+	
+	/*Set STBY AIN1 BIN1 as HIGH and AIN2 BIN2 as LOW*/
+	GPIOB_PDOR |= (1<<2); //AIN1 HIGH
+	GPIOE_PDOR |= (1<<21); //BIN1 HIGH
+	GPIOE_PDOR |= (1<<20); //STBY HIGH
+	
+	
+	
+}
+
 void PWM_LED_Duty_Cycle(float axis){
 	short negative_flag = 0;
 	if(axis <0){
