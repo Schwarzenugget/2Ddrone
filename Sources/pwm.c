@@ -103,8 +103,8 @@ void PWM_Motors_Init(){
 	TPM1_C0SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
 	TPM1_C1SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
 	/*schedule next transition*/
-	TPM1_C0V = 4000; //Duty Cycle A
-	TPM1_C1V = 4000; //Duty Cycle B
+	TPM1_C0V = 6000; //Duty Cycle A
+	TPM1_C1V = 200; //Duty Cycle B
 	/*Enable timer mode*/
 	TPM1_SC |= TPM_SC_CMOD(1);
 	
@@ -114,7 +114,7 @@ void PWM_Motors_Init(){
 	
 	/*Set STBY AIN1 BIN1 as HIGH and AIN2 BIN2 as LOW*/
 	GPIOB_PDOR |= (1<<2); //AIN1 HIGH
-	GPIOE_PDOR |= (1<<21); //BIN1 HIGH
+	GPIOE_PDOR |= (1<<22); //BIN2 HIGH
 	GPIOE_PDOR |= (1<<20); //STBY HIGH
 	
 	
