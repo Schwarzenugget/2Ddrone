@@ -17,7 +17,7 @@ unsigned char AccData[6];
 short Xout_14_bit, Yout_14_bit, Zout_14_bit;
 Axis2D Input_g; // Xout_g, Yout_g, 
 float Zout_g;
-char DataReady, PrintReady;
+char AccReady, PrintReady;
 char Xoffset, Yoffset, Zoffset;
 char DebugBuffer[64];
 
@@ -31,7 +31,7 @@ int main (void)
 	/**************
 	* Accelerometer
 	***************/
-	DataReady = 0;
+	AccReady = 0;
 	MCU_Init();
   	Accelerometer_Init();
   	Calibrate();  
@@ -49,7 +49,6 @@ int main (void)
   	ConsoleIO_Init();
 	PrintReady = 0;
 	FTPM0_Init();
-	
 	/**************
 	PID
 	**************/
@@ -59,28 +58,29 @@ int main (void)
 	Axis2D Target_g = {0.0,0.0}, Output_pwm; //Input_g previously defined
 
 	/*Specify initial tuning parameters*/
-	float Kp=2, Ki=5, Kd=1; //Random numbers
+	float Kp=6000, Ki=100, Kd=0; //Random numbers
 	/* Init Axis Y PID*/
-	PID_Init(&Yaxis, &Input_g.Y, &Output_pwm.Y, &Target_g.Y, Kp, Ki, Kd, P_ON_E,DIRECT);
+	PID_Init(&Yaxis, &Input_g.Y, &Output_pwm.Y, &Target_g.Y, Kp, Ki, Kd, P_ON_E,REVERSE);
 	
-	while(!DataReady){}; //Read Accelerometer to init PID
+	while(!AccReady){}; //Read Accelerometer to init PID
 	AccReadValues();
-  	DataReady = 0;
+  	AccReady = 0;
   	
   	/*Turn On PID*/
   	PID_SetMode(&Yaxis, AUTOMATIC);
-  	
+	
   	while(1)
     {
-		if (DataReady)		// Is a new set of data ready? 
+		if (AccReady)		// Is a new set of data ready? 
 		{  		
-			DataReady = 0;
+			AccReady = 0;
 																	
 			AccReadValues();
 			
 			PID_Compute(&Yaxis); //PID computing
 			
 			PWM_LED_Duty_Cycle(Input_g.Y);
+			PWM_Motor_Duty_Cycle(Output_pwm.Y, 0);
 						
 		} 
 		if (PrintReady){
@@ -143,7 +143,7 @@ void Accelerometer_Init (void)
 	 */
 	I2C_WriteRegister(MMA845x_I2C_ADDRESS, XYZ_DATA_CFG_REG, 0x00);		// +/-2g range -> 1g = 16384/4 = 4096 counts 
 	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG2, 0x02);		// High Resolution mode 
-	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG1, 0x5);	// 0x5 ODR = 800Hz Fast mode , Reduced noise, Active mode	
+	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG1, 0x1D);	// 0x5 ODR = 800Hz Fast mode , Reduced noise, Active mode	
 }
 
 /******************************************************************************
@@ -176,7 +176,7 @@ void Calibrate (void)
 	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG3, 0x00);		// Push-pull, active low interrupt 
 	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG4, 0x01);		// Enable DRDY interrupt 
 	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG5, 0x01);		// DRDY interrupt routed to INT1 - PTA14 
-	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG1, 0x05);		// ODR = 800Hz Fast mode , Reduced noise, Active mode		
+	I2C_WriteRegister(MMA845x_I2C_ADDRESS, CTRL_REG1, 0x1D);		// ODR = 800Hz Fast mode , Reduced noise, Active mode		
 }
 
 void AccReadValues(){
@@ -199,10 +199,15 @@ void PORTA_IRQHandler()
 {
 	//flag de interrupcio
 	PORTA_PCR14 |= PORT_PCR_ISF(1);
-	
 	//avisar al bucle principal
-	DataReady = 1;
+	AccReady = 1;
 }
+
+
+
+/******************
+ * PRINTF INTERRUPT
+ *****************/
 
 void FTPM0_Init(){
 	/*Enable clock con TPM0*/
@@ -231,7 +236,7 @@ void FTM0_IRQHandler(void){
 	/*Clear Timer Overflow Flag*/
 	TPM0_SC |= 0x1 << 7;
 	PrintReady = 1;
-	DataReady = 1;
+	//AccReady = 1;
 	
 }
 

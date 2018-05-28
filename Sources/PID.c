@@ -27,7 +27,7 @@ void PID_Init(PID* PID, REAL* Input, REAL* Output, REAL* Setpoint,
 	PID->mySetpoint = Setpoint;
 	PID->inAuto = 0;
 
-    PID_SetOutputLimits(PID, 0, 0xFFFF);				//default output limit corresponds to
+    PID_SetOutputLimits(PID, 0, 8000);				//default output limit corresponds to
 												//the TPM module counter limit
 
     PID->SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
@@ -48,10 +48,10 @@ void PID_Init(PID* PID, REAL* Input, REAL* Output, REAL* Setpoint,
 char PID_Compute(PID* PID)
 {
    if(!PID->inAuto) return 0;
-   unsigned long now = millis;
-   unsigned long timeChange = (now - PID->lastTime);
-   if(timeChange>=PID->SampleTime)
-   {
+   //unsigned long now = millis;
+   //unsigned long timeChange = (now - PID->lastTime);
+   //if(timeChange>=PID->SampleTime)
+   //{
       /*Compute all the working error variables*/
       REAL input = *(PID->myInput);
       REAL error = *(PID->mySetpoint) - input;
@@ -77,11 +77,11 @@ char PID_Compute(PID* PID)
 	    *(PID->myOutput) = output;
 
       /*Remember some variables for next time*/
-	  PID->lastInput = input;
-	  PID->lastTime = now;
+	  //PID->lastInput = input;
+	  //PID->lastTime = now;
 	    return 1;
-   }
-   else return 0;
+   //}
+   //else return 0;
 }
 
 /* SetTunings(...)*************************************************************

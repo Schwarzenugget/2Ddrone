@@ -8,12 +8,13 @@
 #ifndef PWM_LED_H_
 #define PWM_LED_H_
 
-
-
-#endif /* PWM_LED_H_ */
-
-
 void delay(int);
 void PWM_LED_Init();
 void PWM_LED_Duty_Cycle(float);
 void PWM_Motors_Init();
+void PWM_Motor_Duty_Cycle(float, float);
+
+#endif /* PWM_LED_H_ */
+
+
+
