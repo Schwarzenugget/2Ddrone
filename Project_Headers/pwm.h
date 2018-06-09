@@ -12,7 +12,7 @@ void delay(int);
 void PWM_LED_Init();
 void PWM_LED_Duty_Cycle(float);
 void PWM_Motors_Init();
-void PWM_Motor_Duty_Cycle(float, float);
+void PWM_Motor_Duty_Cycle(float, float, float, float);
 
 #endif /* PWM_LED_H_ */
 

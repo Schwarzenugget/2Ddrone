@@ -67,14 +67,16 @@ void PWM_LED_Init()
 
 void PWM_Motors_Init(){
 	/*
-	* PWMA - PTB0
-	* PWMB - PTB1
-	* AIN1 - PTB2
-	* AIN2 - PTB3
-	* STBY - PTE20
-	* BIN1 - PTE21
-	* BIN2 - PTE22
-	*/
+		* X:PWMA - PTB0
+		* Y:PWMA - PTB1
+		* X:PWMB - PTB2
+		* X:PWMB - PTB3
+		* AIN1(X&B) - PTC2
+		* AIN2(X&B) - PTE29 (PTC1 is not properly soldered)
+		* STBY(X&B) - PTE20
+		* BIN1(X&B) - PTE21
+		* BIN2(X&B) - PTE22
+		*/
 	
 	/*Init Pins*/
 	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
@@ -82,38 +84,49 @@ void PWM_Motors_Init(){
 	SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
 	PORTB_PCR0 |= PORT_PCR_MUX(3); //PWM TPM1 CH0
 	PORTB_PCR1 |= PORT_PCR_MUX(3); //PWM TPM1 CH1
-	PORTB_PCR2 |= PORT_PCR_MUX(1); //GPIO
-	PORTB_PCR3 |= PORT_PCR_MUX(1); //GPIO
+	PORTB_PCR2 |= PORT_PCR_MUX(3); //PWM TPM2 CH0
+	PORTB_PCR3 |= PORT_PCR_MUX(3); //PWM TPM2 CH1
+	PORTC_PCR2 |= PORT_PCR_MUX(1);//GPIO
+	PORTE_PCR29 |= PORT_PCR_MUX(1);//GPIO
 	PORTE_PCR20 |= PORT_PCR_MUX(1);//GPIO
 	PORTE_PCR21 |= PORT_PCR_MUX(1);//GPIO
 	PORTE_PCR22 |= PORT_PCR_MUX(1);//GPIO
 	
 	/*Init PWM signals*/
-	/*Enable clock con TPM0*/
+	/*Enable clock con TPM0/2*/
 	SIM_SCGC6 |= SIM_SCGC6_TPM1_MASK;
+	SIM_SCGC6 |= SIM_SCGC6_TPM2_MASK;
 	/*Select clock source*/
 	SIM_SOPT2 |= 0x01 << SIM_SOPT2_TPMSRC_SHIFT; //MCGFLLCLK clock
 	/*Disable TPM while configuring it*/
 	TPM1_SC = TPM_SC_CMOD(0);
+	TPM2_SC = TPM_SC_CMOD(0);
 	/*TPM Modulo Register */
-	TPM1_MOD = 8000; //1sec
+	TPM1_MOD = 8000; 
+	TPM2_MOD = 8000; 
 	/*Divide Clock by 2^n*/
 	TPM1_SC |= TPM_SC_PS(0);
+	TPM2_SC |= TPM_SC_PS(0);
 	/*OC toogle mode*/
 	TPM1_C0SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
 	TPM1_C1SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
+	TPM2_C0SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
+	TPM2_C1SC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; //PWM and Make signal low on match
 	/*schedule next transition*/
-	TPM1_C0V = 0; //Duty Cycle A
-	TPM1_C1V = 0; //Duty Cycle B
+	TPM1_C0V = 0; //Duty Cycle XA
+	TPM1_C1V = 0; //Duty Cycle YA
+	TPM2_C0V = 0; //Duty Cycle XB
+	TPM2_C1V = 0; //Duty Cycle YB
 	/*Enable timer mode*/
 	TPM1_SC |= TPM_SC_CMOD(1);
+	TPM2_SC |= TPM_SC_CMOD(1);
 	
 	/*Set GPIO signals as Outputs*/
-	GPIOB_PDDR |= (1<<2 | 1<<3);
-	GPIOE_PDDR |= (1<<20 | 1<<21 | 1<<22);
+	GPIOC_PDDR |= 1<<2;
+	GPIOE_PDDR |= (1<< 29 | 1<<20 | 1<<21 | 1<<22);
 	
 	/*Set STBY AIN1 BIN1 as HIGH and AIN2 BIN2 as LOW*/
-	GPIOB_PDOR |= (1<<2); //AIN1 HIGH
+	GPIOC_PDOR |= (1<<2); //AIN1 HIGH
 	GPIOE_PDOR |= (1<<22); //BIN2 HIGH
 	GPIOE_PDOR |= (1<<20); //STBY HIGH
 	
@@ -121,9 +134,11 @@ void PWM_Motors_Init(){
 	
 }
 
-void PWM_Motor_Duty_Cycle(float mA, float mB){
-	TPM1_C0V = mA;
-	TPM1_C1V = mB;
+void PWM_Motor_Duty_Cycle(float xA, float xB, float yA, float yB){
+	TPM1_C0V = xA;
+	TPM1_C1V = yA;
+	TPM2_C0V = xB;
+	TPM2_C1V = yB;
 	
 }
 

@@ -9,6 +9,29 @@
 #include <string.h>
 #include "ConsoleIO.h"
 
+/******************************************************************************
+* Pin assigment MKL25Z128
+******************************************************************************/
+
+/*
+	* Y:PWMA - PTB0
+	* Y:PWMB - PTB1
+	* X:PWMA - PTB2
+	* X:PWMB - PTB3
+	* AIN1 - PTC2
+	* AIN2 - PTE29 (PTC1 is not properly soldered)
+	* STBY - PTE20
+	* BIN1 - PTE21
+	* BIN2 - PTE22
+	* PTA14 - Interrupt Acc
+	* PTE24 - I2C Acc
+	* PTE25 - I2C Acc
+	* PTB18 - Red LED
+	* PTB19 - Green LED
+	* PTA14 - UART PTA18
+	* PTA15 - UART PTA19
+	*/
+
 
 /******************************************************************************
 * Global variables
@@ -16,6 +39,8 @@
 unsigned char AccData[6];
 short Xout_14_bit, Yout_14_bit, Zout_14_bit;
 Axis2D Input_g; // Xout_g, Yout_g, 
+Axis2D Target_g = {0.0,0.0};
+Motors Output_pwm; //Input_g previously defined
 float Zout_g;
 char AccReady, PrintReady;
 char Xoffset, Yoffset, Zoffset;
@@ -31,6 +56,7 @@ int main (void)
 	/**************
 	* Accelerometer
 	***************/
+	int turn = 0;
 	AccReady = 0;
 	MCU_Init();
   	Accelerometer_Init();
@@ -39,7 +65,7 @@ int main (void)
   	/**************
   	* PWM
   	**************/
-  	PWM_LED_Init();
+  	//PWM_LED_Init();
   	PWM_Motors_Init();
   	
   	/**************
@@ -52,35 +78,53 @@ int main (void)
 	/**************
 	PID
 	**************/
-	//PID Xaxis; Not used in single axis demo
-	PID Yaxis;
+	PID XaxisA, XaxisB, YaxisA, YaxisB;
 	/*Define Variables we'll be connecting to*/
-	Axis2D Target_g = {0.0,0.0}, Output_pwm; //Input_g previously defined
-
+	
 	/*Specify initial tuning parameters*/
-	float Kp=6000, Ki=100, Kd=0; //Random numbers
+	float Kp=6000, Ki=3000, Kd=800; //0,2000,400
 	/* Init Axis Y PID*/
-	PID_Init(&Yaxis, &Input_g.Y, &Output_pwm.Y, &Target_g.Y, Kp, Ki, Kd, P_ON_E,REVERSE);
+	PID_Init(&XaxisA, &Input_g.X, &Output_pwm.XA, &Target_g.X, Kp, Ki, Kd, P_ON_E,DIRECT);
+	PID_Init(&YaxisA, &Input_g.Y, &Output_pwm.YA, &Target_g.Y, Kp, Ki, Kd, P_ON_E,REVERSE);
+	PID_Init(&XaxisB, &Input_g.X, &Output_pwm.XB, &Target_g.X, Kp, Ki, Kd, P_ON_E,REVERSE);
+	PID_Init(&YaxisB, &Input_g.Y, &Output_pwm.YB, &Target_g.Y, Kp, Ki, Kd, P_ON_E,DIRECT);
 	
 	while(!AccReady){}; //Read Accelerometer to init PID
 	AccReadValues();
   	AccReady = 0;
   	
   	/*Turn On PID*/
-  	PID_SetMode(&Yaxis, AUTOMATIC);
+  	PID_SetMode(&XaxisA, AUTOMATIC);
+  	PID_SetMode(&XaxisB, AUTOMATIC);
+	PID_SetMode(&YaxisA, AUTOMATIC);
+  	PID_SetMode(&YaxisB, AUTOMATIC);
 	
   	while(1)
     {
+
 		if (AccReady)		// Is a new set of data ready? 
 		{  		
 			AccReady = 0;
 																	
 			AccReadValues();
+			switch(turn){
+			case 0: PID_Compute(&XaxisA);
+				break;
+			case 1: PID_Compute(&YaxisA);
+				break;
+			case 2: PID_Compute(&XaxisB);
+				break;
+			case 3: PID_Compute(&YaxisB);
+				break;
+			}
+			turn = (turn+1)%4;
+			/*PID_Compute(&XaxisA); //PID computing
+			PID_Compute(&XaxisB);
+			PID_Compute(&YaxisA); //PID computing
+			PID_Compute(&YaxisB);*/
 			
-			PID_Compute(&Yaxis); //PID computing
-			
-			PWM_LED_Duty_Cycle(Input_g.Y);
-			PWM_Motor_Duty_Cycle(Output_pwm.Y, 0);
+			//PWM_LED_Duty_Cycle(Input_g.Y);
+			PWM_Motor_Duty_Cycle(Output_pwm.XA, Output_pwm.XB, Output_pwm.YA, Output_pwm.YB);
 						
 		} 
 		if (PrintReady){

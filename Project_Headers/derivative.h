@@ -99,3 +99,10 @@ typedef struct Axis2D{
 	float X;
 	float Y;
 }Axis2D;
+
+typedef struct Motors{
+	float XA;
+	float XB;
+	float YA;
+	float YB;
+}Motors;
