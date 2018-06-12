@@ -35,7 +35,7 @@ void PID_Init(PID* PID, REAL* Input, REAL* Output, REAL* Setpoint,
     PID_SetControllerDirection(PID, ControllerDirection);
     PID_SetTunings(PID, Kp, Ki, Kd, POn);
 
-    PID->lastTime = millis-PID->SampleTime; //TODO Check if it works
+    //PID->lastTime = millis-PID->SampleTime; //TODO Check if it works
 }
 
 

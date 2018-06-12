@@ -131,7 +131,7 @@ void PWM_Motors_Init(){
 	
 	/*Set STBY AIN1 BIN1 as HIGH and AIN2 BIN2 as LOW*/
 	GPIOE_PDOR |= (1<<29); //AIN1 HIGH
-	GPIOE_PDOR |= (1<<22); //BIN2 HIGH
+	GPIOE_PDOR |= (1<<21); //BIN1 HIGH
 	GPIOE_PDOR |= (1<<20); //STBY HIGH
 	
 	
@@ -139,10 +139,10 @@ void PWM_Motors_Init(){
 }
 
 void PWM_Motor_Duty_Cycle(float xA, float xB, float yA, float yB){
-	TPM1_C0V = 8000;//xA;
-	TPM1_C1V = 8000;//yA;
-	TPM2_C0V = 8000;//xB;
-	TPM2_C1V = 8000;//yB;
+	TPM1_C0V = 4000;//xA;
+	TPM1_C1V = 4000;//yA;
+	TPM2_C0V = 4000;//xB;
+	TPM2_C1V = 4000;//yB;
 	
 }
 
