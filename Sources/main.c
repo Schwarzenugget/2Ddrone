@@ -28,8 +28,8 @@
 	* PTE25 - I2C Acc
 	* PTB18 - Red LED
 	* PTB19 - Green LED
-	* PTA14 - UART PTA18
-	* PTA15 - UART PTA19
+	* PTA1 - UART 
+	* PTA2 - UART
 	*/
 
 
@@ -56,7 +56,6 @@ int main (void)
 	/**************
 	* Accelerometer
 	***************/
-	int turn = 0;
 	AccReady = 0;
 	MCU_Init();
   	Accelerometer_Init();
@@ -65,7 +64,7 @@ int main (void)
   	/**************
   	* PWM
   	**************/
-  	//PWM_LED_Init();
+  	PWM_LED_Init();
   	PWM_Motors_Init();
   	
   	/**************
@@ -82,7 +81,7 @@ int main (void)
 	/*Define Variables we'll be connecting to*/
 	
 	/*Specify initial tuning parameters*/
-	float Kp=6000, Ki=3000, Kd=800; //0,2000,400
+	float Kp=30000, Ki=0, Kd=0; //0,2000,400
 	/* Init Axis Y PID*/
 	PID_Init(&XaxisA, &Input_g.X, &Output_pwm.XA, &Target_g.X, Kp, Ki, Kd, P_ON_E,DIRECT);
 	PID_Init(&YaxisA, &Input_g.Y, &Output_pwm.YA, &Target_g.Y, Kp, Ki, Kd, P_ON_E,REVERSE);
@@ -107,21 +106,11 @@ int main (void)
 			AccReady = 0;
 																	
 			AccReadValues();
-			switch(turn){
-			case 0: PID_Compute(&XaxisA);
-				break;
-			case 1: PID_Compute(&YaxisA);
-				break;
-			case 2: PID_Compute(&XaxisB);
-				break;
-			case 3: PID_Compute(&YaxisB);
-				break;
-			}
-			turn = (turn+1)%4;
-			/*PID_Compute(&XaxisA); //PID computing
-			PID_Compute(&XaxisB);
+
+			PID_Compute(&XaxisA); //PID computing
 			PID_Compute(&YaxisA); //PID computing
-			PID_Compute(&YaxisB);*/
+			PID_Compute(&XaxisB);
+			PID_Compute(&YaxisB);
 			
 			//PWM_LED_Duty_Cycle(Input_g.Y);
 			PWM_Motor_Duty_Cycle(Output_pwm.XA, Output_pwm.XB, Output_pwm.YA, Output_pwm.YB);

@@ -35,9 +35,12 @@ void PWM_LED_Init()
     
     //LED CONFIG
     SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
-    PORTB_PCR18 |= PORT_PCR_MUX(3);
-    PORTB_PCR19 |= PORT_PCR_MUX(3);
-    
+    PORTB_PCR18 |= PORT_PCR_MUX(1);
+    PORTB_PCR19 |= PORT_PCR_MUX(1);
+#if 1
+    GPIOB_PDDR |= 1<<18;
+#endif
+#if 0
     //TPM CONFIG
 	/*Enable clock con TPM0*/
 	SIM_SCGC6 |= SIM_SCGC6_TPM2_MASK;
@@ -62,6 +65,7 @@ void PWM_LED_Init()
 	PORTD_PCR1 |= PORT_PCR_MUX(1);
 	GPIOD_PDDR |= 0x2; 	
 	GPIOD_PDOR &= ~0x2;*/
+#endif
 
 }
 
@@ -71,11 +75,11 @@ void PWM_Motors_Init(){
 		* Y:PWMA - PTB1
 		* X:PWMB - PTB2
 		* X:PWMB - PTB3
-		* AIN1(X&B) - PTC2
-		* AIN2(X&B) - PTE29 (PTC1 is not properly soldered)
-		* STBY(X&B) - PTE20
-		* BIN1(X&B) - PTE21
-		* BIN2(X&B) - PTE22
+		* AIN2(A&B) - PTC2
+		* AIN1(A&B) - PTE29 (PTC1 is not properly soldered)
+		* STBY(A&B) - PTE20
+		* BIN1(A&B) - PTE21
+		* BIN2(A&B) - PTE22
 		*/
 	
 	/*Init Pins*/
@@ -126,7 +130,7 @@ void PWM_Motors_Init(){
 	GPIOE_PDDR |= (1<< 29 | 1<<20 | 1<<21 | 1<<22);
 	
 	/*Set STBY AIN1 BIN1 as HIGH and AIN2 BIN2 as LOW*/
-	GPIOC_PDOR |= (1<<2); //AIN1 HIGH
+	GPIOE_PDOR |= (1<<29); //AIN1 HIGH
 	GPIOE_PDOR |= (1<<22); //BIN2 HIGH
 	GPIOE_PDOR |= (1<<20); //STBY HIGH
 	
@@ -135,10 +139,10 @@ void PWM_Motors_Init(){
 }
 
 void PWM_Motor_Duty_Cycle(float xA, float xB, float yA, float yB){
-	TPM1_C0V = xA;
-	TPM1_C1V = yA;
-	TPM2_C0V = xB;
-	TPM2_C1V = yB;
+	TPM1_C0V = 8000;//xA;
+	TPM1_C1V = 8000;//yA;
+	TPM2_C0V = 8000;//xB;
+	TPM2_C1V = 8000;//yB;
 	
 }
 
